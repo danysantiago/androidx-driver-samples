@@ -67,6 +67,19 @@ Java_org_dany_sqlcipher_driver_SQLCipherDriverKt_nativeOpen(
     return reinterpret_cast<jlong>(db);
 }
 
+extern "C" JNIEXPORT jboolean JNICALL
+Java_org_dany_sqlcipher_driver_SQLCipherConnectionKt_nativeInTransaction(
+        JNIEnv *env,
+        jclass clazz,
+        jlong dbPointer) {
+    sqlite3 *db = reinterpret_cast<sqlite3 *>(dbPointer);
+    if (sqlite3_get_autocommit(db) == 0) {
+        return JNI_TRUE;
+    } else {
+        return JNI_FALSE;
+    }
+}
+
 extern "C" JNIEXPORT jlong JNICALL
 Java_org_dany_sqlcipher_driver_SQLCipherConnectionKt_nativePrepare(
         JNIEnv* env,

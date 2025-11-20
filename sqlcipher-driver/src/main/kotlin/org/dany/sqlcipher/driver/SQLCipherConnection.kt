@@ -7,10 +7,18 @@ import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.throwSQLiteException
 import org.dany.sqlcipher.driver.ResultCode.SQLITE_MISUSE
 
-internal class SQLCipherConnection(private val connectionPointer: Long) :
-    SQLiteConnection {
+internal class SQLCipherConnection(
+    private val connectionPointer: Long
+) : SQLiteConnection {
 
     @Volatile private var isClosed = false
+
+    override fun inTransaction(): Boolean {
+        if (isClosed) {
+            throwSQLiteException(SQLITE_MISUSE, "connection is closed")
+        }
+        return nativeInTransaction(connectionPointer)
+    }
 
     override fun prepare(sql: String): SQLiteStatement {
         if (isClosed) {
@@ -27,6 +35,8 @@ internal class SQLCipherConnection(private val connectionPointer: Long) :
         isClosed = true
     }
 }
+
+private external fun nativeInTransaction(pointer: Long): Boolean
 
 private external fun nativePrepare(pointer: Long, sql: String): Long
 
